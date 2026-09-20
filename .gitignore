@@ -1,0 +1,28 @@
+# Git & Session History Exclusion
+*.jsonl
+*.log
+transcript*
+transcript_full*
+
+# Checkpoint archives & local chat states (NEVER commit chat history)
+checkpoints/
+.checkpoints/
+*.md.tmp
+test_handoff.md
+session_state.md
+session_handoff.md
+scratch/
+.system_generated/
+
+# Python & Environment
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+
+# OS Artifacts
+.DS_Store
+Thumbs.db
+desktop.ini
