@@ -1,16 +1,16 @@
 <#
 .SYNOPSIS
-    Unified One-Shot Runner untuk Pemadatan Konteks Sesi Antigravity (with Mention by ID).
+    Unified One-Shot Runner for Antigravity Chat Context Compactor (ID-Mentionable).
 .DESCRIPTION
-    Menjalankan audit profil konteks, mengekstrak seluruh state invariants
-    dengan ID Dokumen (DOC-ID) dan Anchor ID unik, menyimpannya ke Dual Storage
-    (.checkpoints/ dan ~/.gemini/checkpoints/), serta menyalinnya ke Clipboard.
+    Profiles conversation bloat, extracts all state invariants with an official
+    Document ID (DOC-ID) and item-level anchor IDs, persists to Dual Storage
+    (.checkpoints/ and ~/.gemini/checkpoints/), and auto-copies to the Windows Clipboard.
 .PARAMETER DocId
-    Custom Document ID opsional (misal: CTX-001).
+    Optional custom Document ID (e.g., CTX-MAIN-001).
 .PARAMETER Clipboard
-    Menyalin hasil handoff brief langsung ke clipboard (default: True).
+    Auto-copies distilled handoff brief to clipboard (default: True).
 .PARAMETER Output
-    Path file markdown opsional untuk menyimpan snapshot state.
+    Optional markdown file path to save snapshot state.
 .EXAMPLE
     .\compact-session.ps1
     .\compact-session.ps1 -DocId "CTX-MAIN-001"
@@ -48,7 +48,7 @@ Invoke-Expression $cmd
 
 Write-Host ""
 Write-Host "==========================================================" -ForegroundColor Green
-Write-Host " [OK] CHECKPOINT DOKUMEN BERHASIL DISIMPAN & DIREKONSILIASI!" -ForegroundColor Green
+Write-Host " [OK] CHECKPOINT DOCUMENT PERSISTED & RECONCILED!" -ForegroundColor Green
 Write-Host "      - Global Store   : ~/.gemini/checkpoints/" -ForegroundColor White
 Write-Host "      - Workspace Store: .checkpoints/" -ForegroundColor White
 Write-Host "==========================================================" -ForegroundColor Green

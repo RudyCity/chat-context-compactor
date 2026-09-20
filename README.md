@@ -9,15 +9,15 @@
 
 ---
 
-## ⚡ Quick Installation (Install di Manapun)
+## ⚡ Quick Installation (Install Anywhere)
 
-Pasang skill ini secara instan di komputer/server mana pun dengan satu perintah:
+Install this skill instantly on any machine, cloud VM, or developer environment with a single command:
 
 ### 🪟 Windows (PowerShell)
 ```powershell
 irm https://raw.githubusercontent.com/RudyCity/chat-context-compactor/main/install.ps1 | iex
 ```
-*Opsi: Tambahkan parameter `-Workspace` jika ingin memasang ke folder `./.agents/skills/` proyek lokal.*
+*Tip: Append `-Workspace` to install locally inside `./.agents/skills/` instead of global user configuration.*
 
 ### 🐧 Linux / macOS (Bash)
 ```bash
@@ -29,103 +29,103 @@ curl -fsSL https://raw.githubusercontent.com/RudyCity/chat-context-compactor/mai
 # Global Antigravity Config
 git clone https://github.com/RudyCity/chat-context-compactor.git ~/.gemini/config/skills/chat-context-compactor
 
-# Atau Workspace Project
+# Or Project Workspace (.agents/skills)
 git clone https://github.com/RudyCity/chat-context-compactor.git .agents/skills/chat-context-compactor
 ```
 
 ---
 
-## 🎯 Mengapa Membutuhkan Skill Ini?
+## 🎯 Why This Skill?
 
-Ketika percakapan AI agent berjalan panjang (20+ turns, ribuan baris log/file), context window mengalami **Token Bloat** dan **Attention Drift** (agen lupa instruksi awal, batasan negatif, atau file yang sudah diubah).
+As AI agent conversations run long (20+ turns, thousands of lines of logs and files), context windows suffer from **Token Bloat** and **Attention Drift** (agents forget initial objectives, negative rules, or touched files).
 
-Kebanyakan ringkasan default AI terlalu dangkal (*lossy summary* 2-3 kalimat) sehingga menghilangkan konteks teknis penting.
+Standard default summaries are typically too shallow (*lossy 2-3 sentence summaries*) and discard critical technical context.
 
-**`chat-context-compactor`** menyelesaikan masalah ini dengan prinsip matematis:
+**`chat-context-compactor`** solves this via rigorous mathematical separation:
 
 $$\text{Context Size}_{\text{Compacted}} = \text{State Invariants} + \text{File Mutation Ledger} + \text{Git Live Disk} + \text{Active Horizon} \quad (\ll \text{Raw Transcript})$$
 
-| Kategori | Status | Perlakuan Compactor |
+| Category | Retention Status | Compactor Treatment |
 | :--- | :---: | :--- |
-| **User Core Intent & Constraints** | 🟢 **100% Lossless** | Disimpan utuh dengan Anchor ID: `[REQ-001]`, `[REQ-002]` |
-| **File Mutation Ledger** | 🟢 **100% Lossless** | Path berkas absolut & simbol yang tersentuh: `[FILE-001]` |
-| **Real-Time Git Workspace Disk** | 🟢 **100% Lossless** | Rekonsiliasi branch & uncommitted changes langsung dari disk |
-| **Architectural Decisions (ADR)** | 🟢 **100% Lossless** | Alasan teknis pemilihan solusi & alternatif yang ditolak: `[ADR-001]` |
-| **Error Traces & Resolutions** | 🟢 **100% Lossless** | Mencegah agen di sesi baru mengulangi jalan buntu: `[ERR-001]` |
-| **Raw Tool Output & Dumps** | 🔴 **Pruned** | Pangkas ribuan baris terminal / grep menjadi 1 baris intisari semantik |
-| **Conversational Chit-Chat** | 🔴 **Pruned** | Hapus salam, konfirmasi klise, dan filler asisten |
+| **User Core Intent & Constraints** | 🟢 **100% Lossless** | Preserved verbatim with Anchor IDs: `[REQ-001]`, `[REQ-002]` |
+| **File Mutation Ledger** | 🟢 **100% Lossless** | Absolute paths & touched functions: `[FILE-001]` |
+| **Real-Time Git Workspace Disk** | 🟢 **100% Lossless** | Active branch & dirty files reconciled directly from disk |
+| **Architectural Decisions (ADR)** | 🟢 **100% Lossless** | Technical decisions & rejected alternatives: `[ADR-001]` |
+| **Error Traces & Resolutions** | 🟢 **100% Lossless** | Prevents new sessions from repeating dead ends: `[ERR-001]` |
+| **Raw Tool Output & Dumps** | 🔴 **Pruned** | Thousands of lines of logs/greps condensed to 1-line semantic summaries |
+| **Conversational Chit-Chat** | 🔴 **Pruned** | Greetings, boilerplate acknowledgments, and filler removed |
 
 ---
 
-## 🚀 Fitur Unggulan
+## 🚀 Key Capabilities
 
-1. **State Preservation Index ($SPI \equiv 1.0$)**: Menjamin nol kehilangan konteks (*zero context loss*).
-2. **Mention by ID di Sesi Baru (New Chat)**: Dokumen checkpoint ber-ID unik (`DOC-ID: CTX-XXXXXX-001`) dapat langsung dipanggil di sesi baru tanpa perlu menjelaskan ulang dari awal.
-3. **Dual Storage Registry**: Otomatis menyimpan checkpoint di folder Global (`~/.gemini/checkpoints/`) dan Workspace (`.checkpoints/`) serta memperbarui katalog `INDEX.md`.
-4. **Auto-Copy ke Windows Clipboard (`Ctrl+V`)**: Hasil pemadatan otomatis berada di Clipboard Windows, siap di-paste instan ke tab obrolan baru.
-5. **Real-Time Git Reconciliation**: Mendeteksi branch aktif dan status uncommitted files di disk secara langsung.
+1. **State Preservation Index ($SPI \equiv 1.0$)**: Guarantees zero loss of critical state and active tasks.
+2. **Mention-by-ID in New Chats**: Official Document IDs (`DOC-ID: CTX-XXXXXX-001`) with item-level anchor IDs allow resuming work in fresh sessions without re-explaining background.
+3. **Dual Storage Registry**: Checkpoints are automatically persisted to both Global (`~/.gemini/checkpoints/`) and Workspace (`.checkpoints/`) stores and indexed in `INDEX.md`.
+4. **Auto-Copy to Windows Clipboard (`Ctrl+V`)**: Distilled Handoff Briefs are automatically copied to the clipboard for instant pasting into a new chat tab.
+5. **Real-Time Git Reconciliation**: Captures live branch and uncommitted disk changes so nothing is lost outside the chat window.
 
 ---
 
-## 📖 Cara Penggunaan
+## 📖 How to Use
 
-### Cara 1: Otomatis via Prompt Obrolan
-Di dalam percakapan chat mana pun yang sudah panjang, cukup ketik:
-> *"Tolong compact context sesi ini secara detail"*
-> atau
-> *"Padatkan konteks chat ini untuk pindah ke sesi baru"*
+### Method 1: Automatic via Chat Prompt
+In any long-running conversation, simply prompt:
+> *"Compact the context of this session in detail"*
+> or
+> *"Distill chat context for a fresh session handoff"*
 
-### Cara 2: Mention Checkpoint di Sesi Baru (New Chat)
-Buka tab chat / sesi obrolan baru, lalu cukup sebutkan ID checkpoint:
-> *"Lanjutkan pekerjaan dari checkpoint `CTX-8C26E0-001`"*
-> atau
-> *"Kerjakan `[ACT-001]` dari `CTX-8C26E0-001`"*
+### Method 2: Mention Checkpoints in a New Chat
+Open a new chat tab or session, and mention the checkpoint ID:
+> *"Resume work from checkpoint `CTX-8C26E0-001`"*
+> or
+> *"Execute `[ACT-001]` from `CTX-8C26E0-001`"*
 
-Agen di sesi baru akan otomatis mendeteksi ID, membaca dokumen dari `.checkpoints/` atau `~/.gemini/checkpoints/`, memulihkan mental model 100%, dan **langsung melanjutkan pekerjaan tanpa basa-basi onboarding**.
+The agent in the new session detects the ID, loads the document from `.checkpoints/` or `~/.gemini/checkpoints/`, restores working memory with 100% fidelity, and **proceeds immediately with the task without onboarding questions**.
 
-### Cara 3: One-Shot CLI Runner (Terminal)
-Eksekusi langsung dari terminal di proyek mana saja:
+### Method 3: One-Shot CLI Runner (Terminal)
+Run directly from your project terminal:
 ```powershell
 # Windows PowerShell
 powershell -ExecutionPolicy Bypass -File "~/.gemini/config/skills/chat-context-compactor/scripts/compact-session.ps1"
 
-# Atau jika ada di scripts/
+# Or if within the scripts directory
 .\scripts\compact-session.ps1
 ```
-*Output langsung dianalisis, diekstrak, dan otomatis tersalin ke Clipboard Windows (`Ctrl+V`).*
+*Output is profiled, extracted, and placed directly onto your Windows Clipboard (`Ctrl+V`).*
 
 ---
 
-## 📂 Struktur Repositori
+## 📂 Repository Structure
 
 ```text
 chat-context-compactor/
-├── SKILL.md                          # Instruksi skill inti, trigger, & protokol mention new chat
+├── SKILL.md                          # Main skill instructions, triggers, & new chat mention protocol
 ├── references/
-│   ├── distillation-rules.md         # Taksonomi Keep vs Prune & formula matematis
-│   └── compaction-templates.md       # 4 template dokumen ber-ID dengan HTML anchor tags
+│   ├── distillation-rules.md         # Keep vs Prune taxonomy & mathematical formulation
+│   └── compaction-templates.md       # 4 ID-anchored templates with HTML anchor tags
 ├── scripts/
-│   ├── analyze-context.ps1           # Audit telemetri bloat & tool calls
-│   ├── context_compressor.py         # Python extractor state invariants & git reconciler
+│   ├── analyze-context.ps1           # Transcript telemetry bloat & tool-call analyzer
+│   ├── context_compressor.py         # Python state invariant extractor & Git reconciler
 │   ├── compact-session.ps1           # One-shot runner PowerShell
-│   └── compact-session.cmd           # One-shot runner CMD
-├── install.ps1                       # Installer otomatis Windows
-├── install.sh                        # Installer otomatis Linux/macOS
-├── README.md                         # Dokumentasi panduan
+│   └── compact-session.cmd           # One-shot runner CMD launcher
+├── install.ps1                       # Universal Windows PowerShell installer
+├── install.sh                        # Universal Linux/macOS Bash installer
+├── README.md                         # Project documentation
 ├── LICENSE                           # MIT License
-└── .gitignore                        # Menjamin tidak ada data riwayat chat pribadi yang terunggah
+└── .gitignore                        # Enforces zero personal chat history leaks
 ```
 
 ---
 
-## 🔒 Privasi & Keamanan (Zero Data Leak)
+## 🔒 Privacy & Confidentiality (Zero Chat Leak)
 
-Repositori ini dikonfigurasi dengan aturan `.gitignore` ketat:
-- **TIDAK PERNAH** mengunggah file `transcript.jsonl`, log sesi, atau riwayat obrolan pribadi Anda.
-- Hanya mendistribusikan kode mesin pemadat (*engine*), template kosong, dan aturan distilasi.
+This repository enforces strict `.gitignore` rules:
+- **NEVER** commits or pushes `transcript.jsonl`, conversation logs, or private user checkpoints.
+- Distributes only the pure distillation engine, templates, rules, and installers.
 
 ---
 
-## 📄 Lisensi
+## 📄 License
 
-Didistribusikan di bawah lisensi [MIT](LICENSE). Dibuat dengan ❤️ oleh [RudyCity](https://github.com/RudyCity).
+Distributed under the [MIT](LICENSE) License. Built with ❤️ by [RudyCity](https://github.com/RudyCity).

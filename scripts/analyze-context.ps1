@@ -1,16 +1,16 @@
 <#
 .SYNOPSIS
-    Audit & Analyzer untuk Transkrip Sesi Chat Antigravity.
+    Antigravity Chat Transcript Auditor & Bloat Profiler.
 .DESCRIPTION
-    Membaca transcript.jsonl sesi aktif atau sesi tertentu untuk mendeteksi
-    token bloat, distribusi tool calls, mutasi berkas, dan menyarankan strategi
-    compacting konteks yang optimal tanpa kehilangan state.
+    Scans transcript.jsonl for the active or target session to measure token
+    bloat, tool call distribution, and mutated files, recommending optimal
+    compaction strategies with zero state loss.
 .PARAMETER TranscriptPath
-    Path absolut ke file transcript.jsonl. Jika kosong, akan mencari sesi aktif terbaru di .gemini/antigravity/brain.
+    Absolute path to transcript.jsonl. If omitted, locates the latest active session in ~/.gemini/antigravity/brain.
 .PARAMETER CopyToClipboard
-    Jika diaktifkan, hasil handoff brief terkompresi akan disalin langsung ke clipboard Windows.
+    If specified, triggers automatic generation and copies the handoff brief to the Windows Clipboard.
 .PARAMETER ExportMarkdown
-    Path berkas tujuan untuk mengekspor Markdown Handoff Brief (misal: session_handoff.md).
+    Target markdown output file path for the Handoff Brief.
 .EXAMPLE
     .\analyze-context.ps1
     .\analyze-context.ps1 -CopyToClipboard
@@ -29,7 +29,7 @@ Write-Host " [CHAT CONTEXT AUDITOR & BLOAT PROFILER] (Antigravity) " -Foreground
 Write-Host "========================================================" -ForegroundColor Cyan
 Write-Host ""
 
-# 1. Cari file transcript jika tidak ditentukan
+# 1. Locate transcript if omitted
 if (-not $TranscriptPath -or -not (Test-Path $TranscriptPath)) {
     $brainDir = "$env:USERPROFILE\.gemini\antigravity\brain"
     if (Test-Path $brainDir) {
@@ -39,25 +39,25 @@ if (-not $TranscriptPath -or -not (Test-Path $TranscriptPath)) {
         
         if ($latestLog) {
             $TranscriptPath = $latestLog.FullName
-            Write-Host "[*] Menggunakan transkrip sesi terbaru yang terdeteksi:" -ForegroundColor Green
+            Write-Host "[*] Using latest detected transcript:" -ForegroundColor Green
             Write-Host "    $TranscriptPath" -ForegroundColor Gray
             Write-Host ""
         } else {
-            Write-Error "Tidak ditemukan file transcript.jsonl di $brainDir"
+            Write-Error "No transcript.jsonl found in $brainDir"
             exit 1
         }
     } else {
-        Write-Error "Direktori brain Antigravity tidak ditemukan di $brainDir"
+        Write-Error "Antigravity brain directory not found at $brainDir"
         exit 1
     }
 }
 
 if (-not (Test-Path $TranscriptPath)) {
-    Write-Error "File transkrip tidak ditemukan: $TranscriptPath"
+    Write-Error "Transcript file not found: $TranscriptPath"
     exit 1
 }
 
-# 2. Parsing dan Analisis JSONL
+# 2. Parse & Analyze JSONL
 $lines = Get-Content -Path $TranscriptPath -Encoding UTF8
 $totalSteps = $lines.Count
 $userTurns = 0
@@ -99,78 +99,78 @@ foreach ($line in $lines) {
             }
         }
     } catch {
-        # abaikan baris rusak
+        # ignore malformed entries
     }
 }
 
 $estTokens = [math]::Round($totalChars / 3.8)
 
-# 3. Tampilkan Ringkasan Metrik
-Write-Host "[METRICS] Ringkasan Metrik Konteks Sesi:" -ForegroundColor Yellow
-Write-Host ("   - Total JSONL Steps      : {0} baris" -f $totalSteps)
-Write-Host ("   - User Explicit Turns    : {0} giliran" -f $userTurns)
-Write-Host ("   - Model Response Turns   : {0} respon" -f $modelTurns)
-Write-Host ("   - Langkah Terpotong      : {0} steps (truncated)" -f $truncatedSteps)
-Write-Host ("   - Estimasi Ukuran Teks   : {0} KB" -f [math]::Round($totalChars / 1024, 1))
-Write-Host ("   - Estimasi Total Token   : ~{0} token" -f $estTokens)
+# 3. Display Metrics Summary
+Write-Host "[METRICS] Session Context Summary:" -ForegroundColor Yellow
+Write-Host ("   - Total JSONL Steps      : {0} lines" -f $totalSteps)
+Write-Host ("   - User Explicit Turns    : {0} turns" -f $userTurns)
+Write-Host ("   - Model Response Turns   : {0} responses" -f $modelTurns)
+Write-Host ("   - Truncated Steps        : {0} steps (truncated)" -f $truncatedSteps)
+Write-Host ("   - Estimated Payload Size : {0} KB" -f [math]::Round($totalChars / 1024, 1))
+Write-Host ("   - Estimated Total Tokens : ~{0} tokens" -f $estTokens)
 Write-Host ""
 
-Write-Host "[TOOLS] Distribusi Pemanggilan Tools:" -ForegroundColor Yellow
+Write-Host "[TOOLS] Tool Execution Distribution:" -ForegroundColor Yellow
 if ($toolCallsCount.Count -gt 0) {
     $toolCallsCount.GetEnumerator() | Sort-Object Value -Descending | ForEach-Object {
         $name = $_.Key
         $count = $_.Value
-        Write-Host ("   - {0,-26} : {1} kali" -f $name, $count) -ForegroundColor White
+        Write-Host ("   - {0,-26} : {1} calls" -f $name, $count) -ForegroundColor White
     }
 } else {
-    Write-Host "   (Tidak ada pemanggilan tool yang terdeteksi)" -ForegroundColor Gray
+    Write-Host "   (No tool calls detected)" -ForegroundColor Gray
 }
 Write-Host ""
 
-Write-Host "[FILES] Berkas yang Termutasi dalam Sesi ([NEW] / [MODIFY]):" -ForegroundColor Yellow
+Write-Host "[FILES] Files Mutated in Session ([NEW] / [MODIFY]):" -ForegroundColor Yellow
 if ($modifiedFiles.Count -gt 0) {
     foreach ($f in $modifiedFiles) {
         Write-Host ("   [+] {0}" -f $f) -ForegroundColor Green
     }
 } else {
-    Write-Host "   (Belum ada modifikasi berkas tercatat)" -ForegroundColor Gray
+    Write-Host "   (No file mutations recorded yet)" -ForegroundColor Gray
 }
 Write-Host ""
 
-# 4. Status Git Real-Time (jika ada)
+# 4. Live Workspace Git Status
 $gitExe = Get-Command git -ErrorAction SilentlyContinue
 if ($gitExe) {
     $isGit = git rev-parse --is-inside-work-tree 2>$null
     if ($isGit -eq "true") {
         $branch = git branch --show-current 2>$null
         $dirty = (git status --porcelain 2>$null).Count
-        Write-Host "[GIT] Status Workspace Aktif:" -ForegroundColor Yellow
-        Write-Host ("   - Branch Aktif           : {0}" -f $branch) -ForegroundColor White
-        Write-Host ("   - Berkas Berubah di Disk : {0} berkas" -f $dirty) -ForegroundColor White
+        Write-Host "[GIT] Active Workspace Status:" -ForegroundColor Yellow
+        Write-Host ("   - Active Branch          : {0}" -f $branch) -ForegroundColor White
+        Write-Host ("   - Uncommitted Changes    : {0} files" -f $dirty) -ForegroundColor White
         Write-Host ""
     }
 }
 
-# 5. Rekomendasi Strategi Compacting
-Write-Host "[RECOMMENDATION] Strategi Compacting:" -ForegroundColor Cyan
+# 5. Compaction Strategy Recommendation
+Write-Host "[RECOMMENDATION] Compaction Strategy:" -ForegroundColor Cyan
 if ($estTokens -gt 60000 -or $totalSteps -gt 35) {
-    Write-Host "   [!] PERINGATAN: KONTEKS SANGAT BESAR (>60k token / >35 steps)!" -ForegroundColor Red
-    Write-Host "   Rekomendasi: Eksekusi Mode 1 (Clean Session Handoff Blueprint)." -ForegroundColor Yellow
-    Write-Host "   Buka sesi chat baru dan tempelkan Handoff Brief lengkap agar agen kembali responsif 100%."
+    Write-Host "   [!] WARNING: MASSIVE CONTEXT DETECTED (>60k tokens / >35 steps)!" -ForegroundColor Red
+    Write-Host "   Recommended: Execute Mode 1 (Clean Session Handoff Blueprint)." -ForegroundColor Yellow
+    Write-Host "   Start a fresh chat session and paste the distilled brief for 100% responsiveness."
 } elseif ($estTokens -gt 25000 -or $totalSteps -gt 15) {
-    Write-Host "   [!] PERINGATAN: Konteks mulai membengkak (>25k token / >15 steps)." -ForegroundColor Yellow
-    Write-Host "   Rekomendasi: Gunakan Mode 2 (Inline Working Memory Ledger) untuk menyegarkan fokus agen."
+    Write-Host "   [!] WARNING: Context growth accelerating (>25k tokens / >15 steps)." -ForegroundColor Yellow
+    Write-Host "   Recommended: Use Mode 2 (Inline Working Memory Ledger) to refresh attention focus."
 } else {
-    Write-Host "   [OK] Konteks masih tergolong sehat (<25k token)." -ForegroundColor Green
-    Write-Host "   Sesi masih aman dijalankan tanpa perlu pemadatan drastis."
+    Write-Host "   [OK] Context volume is healthy (<25k tokens)." -ForegroundColor Green
+    Write-Host "   Session can continue without urgent compaction."
 }
 Write-Host ""
 
-# 6. Eksekusi Ekspor & Clipboard jika diminta
+# 6. Automatic Generator & Clipboard Execution
 if ($ExportMarkdown -or $CopyToClipboard) {
     $compressorScript = Join-Path $PSScriptRoot "context_compressor.py"
     if (Test-Path $compressorScript) {
-        Write-Host "[AUTOMATION] Menjalankan generator Handoff Brief..." -ForegroundColor Cyan
+        Write-Host "[AUTOMATION] Executing Handoff Brief generator..." -ForegroundColor Cyan
         $pyArgs = @("`"$compressorScript`"", "--transcript", "`"$TranscriptPath`"")
         if ($ExportMarkdown) {
             $pyArgs += @("--output", "`"$ExportMarkdown`"")
@@ -182,6 +182,6 @@ if ($ExportMarkdown -or $CopyToClipboard) {
         $pyCmd = "python " + ($pyArgs -join " ")
         Invoke-Expression $pyCmd
     } else {
-        Write-Warning "Skrip context_compressor.py tidak ditemukan di $compressorScript"
+        Write-Warning "context_compressor.py script not found at $compressorScript"
     }
 }

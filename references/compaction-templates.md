@@ -1,106 +1,106 @@
 # 📑 Canonical Compaction Templates (with Mentionable IDs)
 
-Dokumen ini menyediakan 4 template standar ber-ID untuk memadatkan konteks sesi chat.
+This document provides 4 standard ID-anchored templates for chat session compaction.
 
 ---
 
 ## Template 1: ID-Mentionable Session Checkpoint Document
 
-*Format dokumen standar ber-ID yang disimpan di `.checkpoints/<DOC-ID>.md` dan `~/.gemini/checkpoints/<DOC-ID>.md`.*
+*Standard ID-anchored document persisted in `.checkpoints/<DOC-ID>.md` and `~/.gemini/checkpoints/<DOC-ID>.md`.*
 
 ```markdown
 # 📑 [DOC-ID: CTX-XXXXXX-001] HIGH-FIDELITY SESSION STATE CHECKPOINT
 
-> **Document ID**: `CTX-XXXXXX-001` | **Metode**: Lossless State Distillation
+> **Document ID**: `CTX-XXXXXX-001` | **Method**: Lossless State Distillation
 >
-> **CARA MENTION DI SESI BARU (NEW CHAT)**:
-> Cukup sebutkan ID dokumen ini di pesan obrolan baru mana pun:
-> *"Lanjutkan pekerjaan dari checkpoint `CTX-XXXXXX-001`"* atau *"Kerjakan `[ACT-001]` dari `CTX-XXXXXX-001`"*
-> Agen di sesi baru akan otomatis memuat dan membaca dokumen ini.
+> **HOW TO MENTION IN A NEW CHAT**:
+> Mention this Document ID in any new chat prompt:
+> *"Resume work from checkpoint `CTX-XXXXXX-001`"* or *"Execute `[ACT-001]` from `CTX-XXXXXX-001`"*
+> The agent in the new session will automatically locate and load this document.
 
 > [!IMPORTANT]
 > **AGENT COLD-START DIRECTIVE**:
-> Anda melanjutkan sesi kerja yang telah dipadatkan. Seluruh state invariant berstatus **VALID & AKTIF**.
-> Dilarang mengulang salam atau menanyakan ulang latar belakang tugas.
-> **Langsung eksekusi tindakan pada Section 6.**
+> You are resuming a previously compacted session. All state invariants below are **VALID & ACTIVE**.
+> Do NOT ask onboarding questions or request background recap.
+> **Proceed directly with executing the actions in Section 6.**
 
 ---
 
-## 1. 🎯 Linimasa Instruksi & Tujuan User (User Intent Invariants)
+## 1. 🎯 Chronological User Instructions & Intent Invariants
 <a id="REQ-001"></a>
-### `[REQ-001]` Instruksi #1
+### `[REQ-001]` Instruction #1
 ```text
-[Permintaan pertama pengguna]
+[Initial user prompt and core goal]
 ```
 
 <a id="REQ-002"></a>
-### `[REQ-002]` Instruksi #2
+### `[REQ-002]` Instruction #2
 ```text
-[Koreksi atau batasan khusus pengguna]
+[Subsequent user correction or negative constraint]
 ```
 
 ---
 
-## 2. 🛠️ Berkas yang Termutasi ([NEW] / [MODIFY])
-| Item ID | Path Berkas Absolut | Deskripsi Mutasi / Simbol Terpengaruh |
+## 2. 🛠️ Structural File Mutation Ledger ([NEW] / [MODIFY] / [DELETE])
+| Item ID | Absolute File Path | Mutation Summary & Touched Symbols |
 | :---: | :--- | :--- |
-| <a id="FILE-001"></a>`[FILE-001]` | `g:/project/app/src/services/api.ts` | Service baru untuk mengambil data dengan retry |
-| <a id="FILE-002"></a>`[FILE-002]` | `g:/project/app/src/components/Table.tsx` | Menambahkan sorting kolom tanggal & pagination |
+| <a id="FILE-001"></a>`[FILE-001]` | `/path/to/project/src/services/api.ts` | New service for fetching orders with exponential retry |
+| <a id="FILE-002"></a>`[FILE-002]` | `/path/to/project/src/components/Table.tsx` | Added date column sorting and server pagination |
 
 ---
 
-## 3. 🌿 Status Git & Real-Time Workspace Disk
-- **Direktori Kerja (CWD)**: `[Path absolut]`
-- **Active Branch**: `master`
-- **Status Working Tree**: `[Clean atau daftar dirty files]`
+## 3. 🌿 Real-Time Git & Workspace Disk State
+- **Working Directory (CWD)**: `/path/to/project`
+- **Active Branch**: `main`
+- **Working Tree Status**: `Clean (no uncommitted changes) or list of dirty files`
 
 ---
 
-## 4. ⚠️ Insiden Error & Resolusi (Negative Knowledge Defense)
+## 4. ⚠️ Incident Traces & Resolutions (Negative Knowledge Defense)
 <a id="ERR-001"></a>
-### `[ERR-001]` Kegagalan pada `[Command / Action]`
-- *Gejala Error*: `[Pesan error]`
-- *Status Resolusi*: Diatasi pada langkah berikutnya dengan cara [solusi].
+### `[ERR-001]` Failure during `[Command / Action]`
+- *Error Symptom*: `[Error message]`
+- *Resolution Status*: Resolved on next step via [fix approach].
 
 ---
 
-## 5. 🧠 Milestone Penalaran & Keputusan Teknis
+## 5. 🧠 Reasoning Milestones & Architectural Decisions (ADR)
 <a id="ADR-001"></a>
-- `[ADR-001]` [Keputusan teknis yang diambil dan alasannya]
+- `[ADR-001]` [Technical decision taken and architectural rationale]
 <a id="ADR-002"></a>
-- `[ADR-002]` [Pendekatan alternatif yang ditolak dan alasannya]
+- `[ADR-002]` [Alternative approach rejected and justification]
 
 ---
 
-## 6. 🚀 Immediate Execution Horizon (Checklist Tindakan Berikutnya)
+## 6. 🚀 Immediate Execution Horizon (Actionable Next Steps)
 <a id="ACT-001"></a>
-- [ ] **`[ACT-001]`**: [Tugas pertama yang harus langsung dikerjakan agen baru]
+- [ ] **`[ACT-001]`**: [Turn-one task the new agent must immediately execute]
 <a id="ACT-002"></a>
-- [ ] **`[ACT-002]`**: [Tugas kedua]
+- [ ] **`[ACT-002]`**: [Second upcoming task]
 <a id="ACT-003"></a>
-- [ ] **`[ACT-003]`**: [Verifikasi dan pengujian]
+- [ ] **`[ACT-003]`**: [Validation and testing task]
 ```
 
 ---
 
 ## Template 2: Inline Working Memory Ledger
 
-*Gunakan template ini di dalam sesi yang sedang berjalan ketika obrolan telah melewati banyak turn dan agen memerlukan penyegaran memori internal agar tidak terjadi attention drift.*
+*Inject this template directly into an ongoing conversation when turns exceed threshold to refresh attention and prevent drift.*
 
 ```markdown
 ---
 ### 🧠 WORKING MEMORY LEDGER (Session Turn: [TurnCount])
-*Konteks aktif disegarkan untuk menjaga fokus dan mencegah degradasi perhatian:*
+*Active context refreshed to maintain precision and eliminate attention drift:*
 
-- **Target Aktif**: [Fokus tugas yang sedang diselesaikan pada giliran ini]
-- **File Kunci Terkait**:
-  - `[Path absolut file 1]` (status: sudah dimodifikasi)
-  - `[Path absolut file 2]` (status: target berikutnya)
-- **Batasan Kritis**: [Batasan penting yang tidak boleh dilanggar]
-- **Status Sisa Pekerjaan**:
-  - [x] [Tugas yang sudah selesai]
-  - [ ] **[TUGAS SAAT INI]**: [Aksi yang sedang dieksekusi]
-  - [ ] [Tugas berikutnya]
+- **Active Objective**: [Immediate task being resolved on this turn]
+- **Key Target Files**:
+  - `[Absolute path 1]` (status: modified & verified)
+  - `[Absolute path 2]` (status: next edit target)
+- **Critical Invariants**: [Must-follow constraints]
+- **Remaining Task Horizon**:
+  - [x] [Completed task]
+  - [ ] **[CURRENT TASK]**: [In-progress action]
+  - [ ] [Upcoming task]
 ---
 ```
 
@@ -108,65 +108,65 @@ Dokumen ini menyediakan 4 template standar ber-ID untuk memadatkan konteks sesi 
 
 ## Template 3: Subagent Dispatch Briefing
 
-*Gunakan template ini ketika memanggil subagent via `invoke_subagent`. Memberikan subagent semua informasi lingkungan tanpa membebani context window-nya.*
+*Use when delegating a focused sub-task via `invoke_subagent`.*
 
 ```markdown
-# SUBAGENT TASK BRIEFING: [Nama Modul / Sub-Tugas]
+# SUBAGENT TASK BRIEFING: [Module / Sub-Task Name]
 
-## Konteks Global & Arsitektur
-- **Workspace**: `[Path absolut]`
-- **Tumpukan Teknologi**: `[Stack]`
-- **Tujuan Sesi Utama**: `[1-2 kalimat tujuan besar]`
+## Global Context & Architecture
+- **Workspace**: `[Absolute path]`
+- **Tech Stack**: `[Stack]`
+- **Parent Objective**: `[1-2 sentence core goal]`
 
-## Tanggung Jawab Spesifik Subagent
-Anda ditugaskan secara eksklusif untuk menyelesaikan:
-`[Deskripsi detail tugas subagent]`
+## Subagent Scope of Responsibility
+You are assigned exclusively to complete:
+`[Detailed subagent task description]`
 
-## Batasan & Kontrak Antarmuka (Constraints)
-- Wajib mematuhi file antarmuka yang ada di `[Path absolut ke types/interface]`.
-- Dilarang memodifikasi file di luar direktori `[Folder spesifik]`.
-- Rule sistem: [e.g. Gunakan format async/await, jangan gunakan any di TypeScript].
+## Constraints & Interface Contracts
+- Adhere strictly to interfaces defined in `[Absolute path to types/interface]`.
+- Do not modify files outside `[Specific directory]`.
+- Rule: [e.g., use async/await, no TypeScript any].
 
-## Berkas yang Relevan (Target Files)
-1. `[Path absolut file target 1]` — [Peran file ini]
-2. `[Path absolut file target 2]` — [Peran file ini]
+## Relevant Target Files
+1. `[Target file 1 path]` — [Role of this file]
+2. `[Target file 2 path]` — [Role of this file]
 
-## Output yang Diharapkan
-Kembalikan laporan ringkas yang mencakup:
-1. File yang dibuat/dimodifikasi.
-2. Hasil verifikasi / build / tes.
-3. Potensi dampak ke modul lain.
+## Expected Return Output
+Return a concise summary covering:
+1. Files created or modified.
+2. Build/test verification results.
+3. Potential downstream impact on other modules.
 ```
 
 ---
 
 ## Template 4: Incident & Deep Debugging Checkpoint
 
-*Gunakan template ini saat menyelesaikan bug pelik yang melibatkan beberapa file atau eksperimen berulang.*
+*Use when tracking complex multi-step debugging and hypothesis elimination.*
 
 ```markdown
 # 🔍 INCIDENT & DEBUGGING CHECKPOINT
 
-## 1. Gejala & Anomali (Symptom)
-- **Deskripsi Bug**: [Apa yang rusak / tidak sesuai ekspektasi]
-- **Langkah Reproduksi**: [Command atau aksi pemicu bug]
-- **Log Error Inti**:
+## 1. Symptom & Reproduction
+- **Anomaly Description**: [Observed failure vs expected behavior]
+- **Reproduction Command**: [Command triggering the bug]
+- **Core Error Log**:
   ```text
-  [Cuplikan 3-5 baris error stack trace terpenting]
+  [Key 3-5 lines of stack trace]
   ```
 
-## 2. Matriks Eksperimen & Eliminasi Hipotesis
-| No | Hipotesis yang Diuji | Aksi / Modifikasi | Hasil | Status |
+## 2. Hypothesis Elimination Matrix
+| No | Tested Hypothesis | Action / Mutation | Result | Status |
 | :---: | :--- | :--- | :--- | :---: |
-| 1 | Masalah CORS di backend | Menambahkan header wildcard di proxy | Error tetap muncul | ❌ Dieliminasi |
-| 2 | Mismatch tipe data ID (string vs number) | Mengubah DTO parser ke number | Payload terurai sukses tapi DB tolak | ❌ Dieliminasi |
-| 3 | Middleware autentikasi tidak menerima Bearer prefix | Memotong prefix "Bearer " | Request tembus ke controller | ✅ Berhasil |
+| 1 | Backend CORS mismatch | Added wildcard headers | Error persisted | ❌ Rejected |
+| 2 | ID type mismatch (string vs number) | Updated DTO parser | Payload parsed, rejected by DB | ❌ Rejected |
+| 3 | Auth middleware expects Bearer prefix | Stripped 'Bearer ' prefix | Request reached controller | ✅ Verified Fix |
 
-## 3. Akar Masalah Terkonfirmasi (Confirmed Root Cause)
-[Penjelasan teknis penyebab utama masalah]
+## 3. Confirmed Root Cause
+[Technical explanation of the underlying failure mechanism]
 
-## 4. Tindakan Perbaikan Permanen (Fix Plan)
-- [ ] Patch `[Path absolut file]` pada baris [N]
-- [ ] Tambahkan unit test untuk mencegah regresi di `[Path absolut test file]`
-- [ ] Verifikasi ulang eksekusi dengan `[Command test]`
+## 4. Remediation Plan
+- [ ] Patch `[File path]` at line [N]
+- [ ] Add regression test in `[Test file path]`
+- [ ] Re-run validation suite via `[Test command]`
 ```

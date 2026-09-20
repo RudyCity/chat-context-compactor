@@ -1,114 +1,177 @@
 ---
 name: chat-context-compactor
 description: >-
-  Triggered when compacting, summarizing, or distilling a long chat session or conversation history ("compact context", "compacting context", "compacting cintext", "padatkan context", "ringkas sesi chat", "rampingkan konteks", "session compacting", "clean context", "compact detail gak kehilangan context", "reduce tokens without losing state", "session handoff", "context checkpoint", "transkrip kepanjangan", "salin state ke sesi baru", "mention by id", "lanjutkan dari checkpoint CTX-", "checkpoint id") into a high-fidelity, lossless architectural memory ledger and handoff checkpoint.
+  Triggered when compacting, summarizing, or distilling a long chat session or conversation history ("compact context", "compacting context", "compacting cintext", "padatkan context", "ringkas sesi chat", "rampingkan konteks", "session compacting", "clean context", "compact detail gak kehilangan context", "reduce tokens without losing state", "session handoff", "context checkpoint", "mention by id", "lanjutkan dari checkpoint CTX-", "checkpoint id") into a high-fidelity, lossless architectural memory ledger and handoff checkpoint.
 ---
 
 # 🧠 Chat Context Compactor (High-Fidelity Lossless-State Distillation with ID-Mention)
 
-Skill ini dirancang khusus untuk **memadatkan (*compacting*) konteks sesi percakapan chat yang panjang** tanpa mengorbankan detail penting (*zero context loss*). Menghasilkan dokumen checkpoint beridentitas resmi (`DOC-ID`) dengan item-level anchor IDs (`REQ-xxx`, `FILE-xxx`, `ADR-xxx`, `ERR-xxx`, `ACT-xxx`) yang **dapat langsung di-mention di sesi obrolan baru (*new chat*)**.
+This skill is purpose-built to **compact long chat session contexts without losing critical technical details (*zero context loss*)**. It prunes 80%–92% of *ephemeral noise* (raw terminal output, duplicate file views, trial-and-error syntax loops, conversational pleasantries), while **retaining 100% of State Invariants**: user goals, chronological instruction timeline, architectural decision records (ADRs), file mutation lineage, real-time Git status, active bug states, and immediate next actions. Checkpoint documents have official identifiers (`DOC-ID`) and item-level anchor IDs (`REQ-xxx`, `FILE-xxx`, `ADR-xxx`, `ERR-xxx`, `ACT-xxx`) that **can be directly mentioned in any new chat session**.
 
 ---
 
 ## 🎯 Trigger Keywords & Activation Contexts
 
-Skill ini aktif dalam 2 skenario:
+This skill activates in two primary scenarios:
 
-### Skenario A: Pemadatan Sesi Berjalan (Compacting Mode)
-- **Kata Kunci Pemicu**: 
-  - `"compact context"`, `"compacting cintext"`, `"padatkan konteks"`, `"ringkas sesi chat"`
-  - `"rampingkan chat"`, `"session compacting"`, `"clean context"`, `"compact detail gak kehilangan context"`
-  - `"buatkan memory checkpoint by id"`, `"handoff sesi"`, `"simpan checkpoint"`
-  - `"export session state"`, `"copy state ke clipboard"`
+### Scenario A: Compacting an Active Session (Compaction Mode)
+- **Trigger Keywords**: 
+  - `"compact context"`, `"compacting context"`, `"compacting cintext"`, `"padatkan konteks"`, `"ringkas sesi chat"`
+  - `"session compacting"`, `"clean context"`, `"compact detail gak kehilangan context"`, `"reduce tokens without losing state"`
+  - `"create memory checkpoint by id"`, `"session handoff"`, `"save checkpoint"`
+  - `"export session state"`, `"copy state to clipboard"`
 
-### Skenario B: Pemulihan State di Sesi Baru (New Chat Mention Resolution)
-- **Kata Kunci Pemicu di Sesi Baru**:
-  - `"Lanjutkan dari checkpoint CTX-..."`
-  - `"Baca checkpoint CTX-..."`, `"Berdasarkan CTX-..."`, `"@CTX-..."`
-  - `"Kerjakan [ACT-xxx] dari CTX-..."`
-  - Pola regex pemicu: `\b(CTX|CKPT)-[A-Za-z0-9_-]+\b`
+### Scenario B: Restoring State in a New Chat (New Chat Mention Resolution)
+- **Trigger Keywords in New Chat**:
+  - `"Resume from checkpoint CTX-..."`
+  - `"Continue from CTX-..."`, `"Refer to CTX-..."`, `"@CTX-..."`
+  - `"Execute [ACT-xxx] from CTX-..."`
+  - Regex trigger pattern: `\b(CTX|CKPT)-[A-Za-z0-9_-]+\b`
 
 ---
 
-## 🔄 Protokol Resolusi Mention di Sesi Baru (New Chat Resolution)
+## 🔄 Protocol: Resolving Checkpoint Mentions in a New Chat
 
 > [!IMPORTANT]
-> **ATURAN WAJIB BAGI AGEN KETIKA PENGGUNA ME-MENTION ID CHECKPOINT DI SESI BARU**:
+> **MANDATORY DIRECTIVE WHEN A USER MENTIONS A CHECKPOINT ID IN A NEW CHAT**:
 >
-> 1. **Deteksi Mention ID**:
->    Jika prompt user mengandung pola ID (misal: `CTX-8C26E0-001`), agen **DILARANG** menjawab "Saya tidak tahu checkpoint apa itu" atau menanyakan apa yang harus dilakukan.
+> 1. **Detect Mention ID**:
+>    When the user prompt includes a checkpoint ID pattern (e.g., `CTX-8C26E0-001`), the agent **MUST NEVER** reply with generic confusion or ask the user to explain the project from scratch.
 >
-> 2. **Pencarian Berkas Checkpoint**:
->    Agen wajib langsung mencari dan membaca berkas dokumen menggunakan `view_file` di urutan lokasi berikut:
+> 2. **Locate & Read Checkpoint Document**:
+>    The agent must immediately inspect and read the document using `view_file` at:
 >    - **Workspace**: `<workspace_root>/.checkpoints/<DOC-ID>.md`
->    - **Global**: `~/.gemini/checkpoints/<DOC-ID>.md` (atau `C:\Users\USER\.gemini\checkpoints\<DOC-ID>.md`)
->    - Atau periksa katalog `INDEX.md` di kedua folder tersebut jika nama berkas tidak persis.
+>    - **Global**: `~/.gemini/checkpoints/<DOC-ID>.md` (or `C:\Users\USER\.gemini\checkpoints\<DOC-ID>.md`)
+>    - Or inspect `INDEX.md` in either directory if the exact file name varies.
 >
-> 3. **Restorasi State Invariant (Working Memory Adoption)**:
->    - Serap tujuan awal pengguna dari `[REQ-xxx]`.
->    - Pahami berkas-berkas yang sudah termutasi dari `[FILE-xxx]`.
->    - Perhatikan keputusan arsitektur di `[ADR-xxx]` dan riwayat kegagalan di `[ERR-xxx]`.
+> 3. **Restore State Invariants (Working Memory Adoption)**:
+>    - Adopt the user's primary objectives from `[REQ-xxx]`.
+>    - Recognize all files already created or modified from `[FILE-xxx]`.
+>    - Adhere to technical decisions in `[ADR-xxx]` and failure avoidance in `[ERR-xxx]`.
 >
-> 4. **Langsung Eksekusi Tanpa Basa-Basi Onboarding**:
->    - Jika pengguna menyebut tindakan spesifik (misal: *"Kerjakan `[ACT-002]`"*), agen langsung mengeksekusi item tersebut.
->    - Jika pengguna hanya menyebut *"Lanjutkan"*, agen langsung melanjutkan item checklist pertama yang belum selesai di `[ACT-xxx]`.
->    - Tidak perlu mengulang salam panjang atau menjelaskan ulang konteks awal.
+> 4. **Execute Immediately Without Onboarding Fluff**:
+>    - If the user referenced a specific action (e.g., *"Work on `[ACT-002]`"*), execute that action immediately.
+>    - If the user simply said *"Continue"*, proceed directly with the first unchecked item in `[ACT-xxx]`.
+>    - Do not output repetitive greetings or regurgitate the entire context back to the user.
 
 ---
 
-## 🏛️ Prinsip Inti: Zero-Loss State Invariants (Gak Kehilangan Konteks)
+## 🏛️ Core Principles: Zero-Loss State Invariants
 
-Compacting adalah **pemisahan matematis antara Invariant State (Data Esensial) dan Ephemeral Noise (Artefak Sementara)**:
+Effective compaction is **a mathematical separation of Invariant State (Essential Data) and Ephemeral Noise (Temporary Artifacts)**:
 
-$$\text{Context Size}_{\text{Compacted}} = \text{State Invariants} + \text{Decision Ledger} + \text{Git Live State} + \text{Active Horizon} \quad (\ll \text{Raw Transcript})$$
+$$\text{Context Size}_{\text{Compacted}} = \text{State Invariants} + \text{Decision Ledger} + \text{Git Live Disk} + \text{Active Horizon} \quad (\ll \text{Raw Transcript})$$
 
-| Kategori | Status | Perlakuan Compacting |
+| Category | Retention Status | Compactor Treatment |
 | :--- | :---: | :--- |
-| **User Core Intent & Constraints** | **LOSSLESS** | Disimpan utuh dengan Anchor ID: `[REQ-001]`, `[REQ-002]`. |
-| **File Mutation Ledger** | **LOSSLESS** | Disimpan dengan Anchor ID: `[FILE-001]`, `[FILE-002]` (path absolut & fungsi tersentuh). |
-| **Git & Live Disk State** | **LOSSLESS** | Rekonsiliasi langsung dengan status riil Git (branch, uncommitted diffs di disk). |
-| **Architectural Decisions (ADR)** | **LOSSLESS** | Disimpan dengan Anchor ID: `[ADR-001]`, `[ADR-002]` (alasan teknis pemilihan solusi). |
-| **Error History & Resolutions** | **LOSSLESS** | Disimpan dengan Anchor ID: `[ERR-001]`, `[ERR-002]` (mencegah loop kegagalan di sesi baru). |
-| **Immediate Next Actions** | **LOSSLESS** | Disimpan dengan Anchor ID: `[ACT-001]`, `[ACT-002]` (tindakan konkret berikutnya). |
-| **Raw Tool Output & Dumps** | **PRUNED** | Pangkas ribuan baris terminal, grep, atau dump file utuh menjadi 1 baris intisari semantik. |
-| **Dead-End Trials & Syntax Churn** | **PRUNED** | Pangkas loop trial-error yang gagal menjadi 1 catatan ringkas pada `[ERR-xxx]`. |
+| **User Core Intent & Constraints** | **LOSSLESS** | Preserved verbatim with Anchor IDs: `[REQ-001]`, `[REQ-002]`. |
+| **File Mutation Ledger** | **LOSSLESS** | Absolute file paths & affected functions: `[FILE-001]`, `[FILE-002]`. |
+| **Git & Live Disk State** | **LOSSLESS** | Reconciled directly with disk reality (active branch, uncommitted diffs). |
+| **Architectural Decisions (ADR)** | **LOSSLESS** | Rationale for chosen solutions & rejected alternatives: `[ADR-001]`. |
+| **Error Traces & Resolutions** | **LOSSLESS** | Past failures & verified fixes: `[ERR-001]` (prevents failure loops). |
+| **Immediate Next Actions** | **LOSSLESS** | Concrete upcoming checklist: `[ACT-001]`, `[ACT-002]`. |
+| **Raw Tool Output & Dumps** | **PRUNED** | Thousands of lines of logs/greps compressed to 1-line semantic summaries. |
+| **Dead-End Trials & Syntax Churn** | **PRUNED** | Failed trials summarized into concise resolution notes in `[ERR-xxx]`. |
+
+See [distillation-rules.md](./references/distillation-rules.md) for the complete taxonomy.
 
 ---
 
-## 🛠️ Tooling & Scripts Otomatis
+## ⚡ 5-Stage Compaction Pipeline
 
-Skill ini dilengkapi paket automasi terpadu:
+When invoked to compact chat session context, the agent must execute the following 5 stages:
+
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    5-STAGE HIGH-FIDELITY COMPACTION PIPELINE                │
+│                                                                             │
+│  ┌───────────────────────────────────────────────────────────────────────┐  │
+│  │ STAGE 1: Context Telemetry & Bloat Profiling                          │  │
+│  │ Scan conversation history / transcript.jsonl, count steps, tool ratio │  │
+│  └──────────────────────────────────┬────────────────────────────────────┘  │
+│                                     │                                       │
+│                                     ▼                                       │
+│  ┌───────────────────────────────────────────────────────────────────────┐  │
+│  │ STAGE 2: Chronological User Intent & Constraint Ledger                │  │
+│  │ Extract all user prompts, sub-goals, and negative rules chronologically│  │
+│  └──────────────────────────────────┬────────────────────────────────────┘  │
+│                                     │                                       │
+│                                     ▼                                       │
+│  ┌───────────────────────────────────────────────────────────────────────┐  │
+│  │ STAGE 3: Structural File & Git Live State Reconciliation             │  │
+│  │ Reconcile chat mutations ([NEW]/[MODIFY]) with live git disk status   │  │
+│  └──────────────────────────────────┬────────────────────────────────────┘  │
+│                                     │                                       │
+│                                     ▼                                       │
+│  ┌───────────────────────────────────────────────────────────────────────┐  │
+│  │ STAGE 4: Architectural Decisions (ADR) & Error Resolution Ledger     │  │
+│  │ Record permanent technical choices, rejected designs, & resolved bugs │  │
+│  └──────────────────────────────────┬────────────────────────────────────┘  │
+│                                     │                                       │
+│                                     ▼                                       │
+│  ┌───────────────────────────────────────────────────────────────────────┐  │
+│  │ STAGE 5: Active State & Immediate Execution Horizon                   │  │
+│  │ Produce next action checklist, cold-start directive, & clipboard copy │  │
+│  └───────────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📋 3 Output Compaction Modes
+
+### Mode 1: Clean Session Handoff Blueprint (Zero-Loss Migration to a New Chat)
+*Use when the user wants to start a fresh chat session.*
+- Produces a self-contained Markdown prompt equipped with an **Agent Cold-Start Directive**.
+- Automatically copied to the Windows Clipboard (`Ctrl+V`).
+- The agent in the new session continues work immediately from turn one without onboarding delay.
+- Template: [TEMPLATE_SESSION_HANDOFF](./references/compaction-templates.md#template-1-id-mentionable-session-checkpoint-document).
+
+### Mode 2: Inline Working Memory Ledger (Attention Refresh in Ongoing Chat)
+*Use when the session has grown long and the agent needs an internal memory refresh to mitigate attention drift.*
+- Injects a compact memory table directly into the current chat stream.
+- Resets attention weights to focus on immediate high-priority invariants.
+- Template: [TEMPLATE_INLINE_LEDGER](./references/compaction-templates.md#template-2-inline-working-memory-ledger).
+
+### Mode 3: Subagent Dispatch Briefing (Focused Delegation)
+*Use when delegating a sub-task via `invoke_subagent`.*
+- Supplies the subagent with an accurate, high-density briefing of global variables, architecture constraints, and relevant files without burdening its context window with past conversational churn.
+- Template: [TEMPLATE_SUBAGENT_DISPATCH](./references/compaction-templates.md#template-3-subagent-dispatch-briefing).
+
+---
+
+## 🛠️ Automated Scripts & Tooling
 
 ### 1. Unified One-Shot Runner (`compact-session.ps1` / `compact-session.cmd`)
-Eksekusi langsung dari terminal untuk mengaudit, mengekstrak state ber-ID, menyimpan ke Dual Storage (`.checkpoints/` dan `~/.gemini/checkpoints/`), serta menyalin ke Clipboard:
+Run from any terminal to profile, extract state, persist to Dual Storage (`.checkpoints/` and `~/.gemini/checkpoints/`), and copy to Clipboard:
 ```powershell
 powershell -ExecutionPolicy Bypass -File "scripts/compact-session.ps1"
 ```
-*Output menampilkan DOC-ID dan otomatis tersalin ke Clipboard Windows (`Ctrl+V`).*
+*Outputs the DOC-ID and copies the Handoff Brief to the Windows Clipboard (`Ctrl+V`).*
 
-### 2. Python State Extractor dengan Mention by ID (`context_compressor.py`)
-Mengekstrak transkrip ke dokumen Markdown ber-ID dan memperbarui `INDEX.md`:
+### 2. Python State Extractor with ID-Mention (`context_compressor.py`)
+Extracts transcripts into ID-anchored Markdown documents and updates `INDEX.md`:
 ```powershell
 python "scripts/context_compressor.py" --doc-id CTX-DEMO-001 --clipboard
 ```
 
 ### 3. PowerShell Context Auditor (`analyze-context.ps1`)
-Menganalisis telemetri bloat konteks sesi:
+Analyzes conversation telemetry, step counts, tool call distributions, and recommends compaction strategy:
 ```powershell
 powershell -ExecutionPolicy Bypass -File "scripts/analyze-context.ps1" -CopyToClipboard
 ```
 
 ---
 
-## 🏷️ Format Mention by ID dalam Percakapan
+## 🏷️ Mention-by-ID Syntax in Conversations
 
-Pengguna dapat me-mention hasil pemadatan dengan berbagai cara yang fleksibel:
+Users can reference checkpoints in new conversations using flexible formats:
 
 - **Full Document Mention**:
-  > *"Lanjutkan pekerjaan dari checkpoint `CTX-8C26E0-001`"*
+  > *"Resume work from checkpoint `CTX-8C26E0-001`"*
 - **Item-Specific Mention**:
-  > *"Tolong selesaikan `[ACT-002]` dari `CTX-8C26E0-001`"*
-- **Reference by ID**:
-  > *"Periksa kembali mutasi `[FILE-003]` pada `CTX-8C26E0-001`"*
-- **Short Hand**:
-  > *"@CTX-8C26E0-001 lanjut"*
+  > *"Execute `[ACT-002]` from `CTX-8C26E0-001`"*
+- **Constraint Reference**:
+  > *"Ensure adherence to `[REQ-002]` and review `[FILE-003]` from `CTX-8C26E0-001`"*
+- **Shorthand**:
+  > *"@CTX-8C26E0-001 continue"*
